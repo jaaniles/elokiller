@@ -8,16 +8,30 @@ export default class PlayersFeed extends Component {
     constructor(props){
         super(props)
         this.state = {
-            players: []
+            players: [],
+            loggedIn: false,
+            user: null
         }
     }
-    componentDidMount(){
-        const rootRef = firebase.database().ref("/players/")
-        rootRef.on('value', snap => {
-            this.setState({
-                players: snap.val()
-            })
-        })
+    componentWillMount(){
+        firebase.auth().onAuthStateChanged(function(user) {
+            if (user) {
+                this.setState({loggedIn: true, user: user.uid})
+                // Get user specified playerlist
+                firebase.database().ref(`/users/${this.state.user}/playerlist`)
+                .on('value', snap => {
+                    const playerlist = snap.val()
+                    Object.keys(playerlist).map(val => {
+                        firebase.database().ref(`/players/${playerlist[val].battleNet}`)// Get player data
+                        .on('value', snap => {
+                            const players = this.state.players.concat(snap.val())
+                            this.setState({players})
+                        })
+                    })
+                })
+            }
+        }.bind(this))
+
     }
     render() {
         const players = Object.keys(this.state.players).map(val => {
