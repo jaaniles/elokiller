@@ -5,8 +5,7 @@ export default class App extends Component {
       return (
           <div className="App">
             <div className="top-header">
-                <h2 className="App-logo">ELOkiller</h2>
-                <code>Destroy your elo</code>
+                <span className="top-header-text">ELOKILLER.COM</span>
             </div>
           </div>
       )

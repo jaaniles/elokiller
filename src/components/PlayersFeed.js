@@ -20,11 +20,14 @@ export default class PlayersFeed extends Component {
                 // Get user specified playerlist
                 firebase.database().ref(`/users/${this.state.user}/playerlist`)
                 .on('value', snap => {
+                    this.setState({players: []})
                     const playerlist = snap.val()
-                    Object.keys(playerlist).map(val => {
+                    Object.keys(playerlist).forEach(val => {
                         firebase.database().ref(`/players/${playerlist[val].battleNet}`)// Get player data
                         .on('value', snap => {
-                            const players = this.state.players.concat(snap.val())
+                            let plr = snap.val()
+                            plr.battleNet = playerlist[val].battleNet
+                            const players = this.state.players.concat(plr)
                             this.setState({players})
                         })
                     })
@@ -43,7 +46,7 @@ export default class PlayersFeed extends Component {
             <div className="players-feed">
                 {
                     players.map(player => {
-                        return <PlayerBox key={player.i} {...player}/>
+                        return <PlayerBox key={player.i} {...player} user={this.state.user}/>
                     })
                 }
             </div>
@@ -64,6 +67,21 @@ class PlayerBox extends Component {
         }
         
     }
+    removePlayer(){
+        const battleNet = this.props.battleNet
+        var getPlayerRef = firebase.database().ref(`/users/${this.props.user}/playerlist`).orderByChild("battleNet").equalTo(battleNet)
+        getPlayerRef.once('value').then(snapshot => {
+            var playerToDeleteKey = Object.keys(snapshot.val())[0]
+            firebase.database().ref(`/users/${this.props.user}/playerlist/${playerToDeleteKey}`).remove()
+            .then(function(){
+                console.log("Player has been deleted")
+            }).catch(function(error){
+                console.log("Player was not found")
+            })
+        }).catch(function(error){
+            console.log("Player was not found")
+        }) 
+    }
     render() {
         const player = this.props
         let labels = [], series = []
@@ -74,23 +92,39 @@ class PlayerBox extends Component {
         const data = { labels: labels, series: [series] }
         const options = { showArea: true }
         const type = 'Line'
-        const ranks = Object.keys(player.ranks).map(val => player.ranks[val].rank)
-        
+        const ranks = Object.keys(player.ranks).map(val => {
+            return { rank: player.ranks[val].rank, img: player.ranks[val].rank_img }
+        })
+        const newest = ranks.pop()
+
         return (
             <div ref="playerBox" className="player-box" onClick={this.enlarge.bind(this)}>
                 <div className="box-header">
                     <img className="avatar" src={player.avatar} alt="avatar"/>
                     <h1>{player.playerName}</h1>
+                    <span className="rank"><PlayerRank {...newest}/></span>
                 </div>
-                <span className="rank">{ranks.pop()}</span>
                 <div className="box-content">
                     <Chartist data={data} options={options} type={type}/>
+                </div>
+                <div className="box-footer">
+                    <span className="flat-button" onClick={this.removePlayer.bind(this)}>REMOVE</span>
                 </div>
             </div>
         )
     }
 }
-
+class PlayerRank extends Component {
+    render(){
+        return (
+            <div className="rank-div">
+             <img className="rank-img" role="presentation" src={this.props.img}/>
+             <span>{this.props.rank}</span>
+            </div>
+        )
+    }
+}
+/* <i className="icon-close tool-button"/> */
 function hasClass( target, className ) {
     return new RegExp('(\\s|^)' + className + '(\\s|$)').test(target.className);
 }
