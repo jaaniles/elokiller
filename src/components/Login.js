@@ -41,15 +41,13 @@ export default class Login extends Component {
         }.bind(this))
     }
     render() {
+        
+        if (this.state.loggedIn){ return <div></div>}
         return (
             <div className="login-container">
-            {
-                this.state.loggedIn ?
-                <button className="logout-btn" onClick={this.logout}>LOGOUT</button>
-                    :
                 <div id="firebaseui-auth-container"></div>
-            }
             </div>
         )
     }
 }
+// <button className="logout-btn" onClick={this.logout}>LOGOUT</button>

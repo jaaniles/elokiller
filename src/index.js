@@ -15,7 +15,7 @@ firebase.initializeApp(firebaseConfig)
 ReactDOM.render(
   <div>
     <App />
-    <Login />
+    <Login/>
     <PlayersFeed />
   </div>,
   document.getElementById('root')

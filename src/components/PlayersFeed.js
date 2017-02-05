@@ -124,7 +124,6 @@ class PlayerRank extends Component {
         )
     }
 }
-/* <i className="icon-close tool-button"/> */
 function hasClass( target, className ) {
     return new RegExp('(\\s|^)' + className + '(\\s|$)').test(target.className);
 }
