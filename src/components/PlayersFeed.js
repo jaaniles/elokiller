@@ -26,6 +26,7 @@ export default class PlayersFeed extends Component {
                         firebase.database().ref(`/players/${playerlist[val].battleNet}`)// Get player data
                         .on('value', snap => {
                             let plr = snap.val()
+                            if (!plr){return}
                             plr.battleNet = playerlist[val].battleNet
                             const players = this.state.players.concat(plr)
                             this.setState({players})
@@ -65,7 +66,6 @@ class PlayerBox extends Component {
         if (!shrink){
             box.classList.toggle("active-box")
         }
-        
     }
     removePlayer(){
         const battleNet = this.props.battleNet
@@ -84,6 +84,7 @@ class PlayerBox extends Component {
     }
     render() {
         const player = this.props
+        if (!player.ranks){return <div></div>}
         let labels = [], series = []
         Object.keys(player.ranks).forEach(rank => {
             labels.push(timeConverter(player.ranks[rank].timestamp))
